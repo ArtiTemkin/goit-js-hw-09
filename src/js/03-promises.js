@@ -1,92 +1,52 @@
-// Достучаться до полей ввода
-// Повесить слушателся на Сабмит
-// 
 import Notiflix from 'notiflix';
 
-const form = document.querySelector('form')
-const delayInput = form.querySelector('input[name="delay"]')
-const stepInput = document.querySelector('input[name="step"]');
-const amountInput = document.querySelector('input[name="amount"]')
+const form = document.querySelector('form');
 
+form.addEventListener('submit', onSubmit);
 
-
-form.addEventListener('submit', onSubmit)
-
-
-function createPromise(a, delay) {
-  let position = a
-
-  const promise = new Promise((succes, failure) => {
+function createPromise(position, delay) {
+  return new Promise((success, failure) => {
     setTimeout(() => {
       const shouldResolve = Math.random() > 0.3;
       if (shouldResolve) {
-        succes({ position, delay })
-        
+        success({ position, delay });
       } else {
-        failure({ position, delay })
+        failure({ position, delay });
       }
-    }, delay).then(() => {
-         let intervalID = setInterval(() => {
-      console.log(
-        'kjh'
-      )
-      const shouldResolve = Math.random() > 0.3;
-      if (shouldResolve) {
-        resolve({ position, delay })
-      } else {
-        reject({ position, delay })
-      }
-      if (position++ >= amountInput.value) {
-        window.clearInterval(intervalID)
-      }
-    }, Number(stepInput.value))
-    })
-   });
-
-  return promise
-
-}  
-
-function onSubmit(event) {
-  event.preventDefault()
-  createPromise(1, delayInput.value)
-    .then(({position, delay}) => {
-      resolve({ position, delay })
-  })
-  .catch(({ position, delay }) => {
-    reject({ position, delay })
+    }, delay);
   });
 }
 
+function onSubmit(event) {
+  event.preventDefault();
 
-function createFirstDelay(success) {
-  console.log(delayInput.value)
-  
+  const delayValue = Number(form.elements['delay'].value);
+  const stepValue = Number(form.elements['step'].value);
+  const amountValue = Number(form.elements['amount'].value);
 
-  promise.then(()=>success)
-}
+  let intervalDelay = delayValue;
 
-function createIterableNotification(position,delay) {
-  console.log("jbjbj")
-  
-    let timerStartValue = Number(delayInput.value);
+  for (let i = 1; i <= amountValue; i += 1) {
+    createPromise(i, intervalDelay)
+      .then(({ position, delay }) => {
+        resolve({ position, delay });
+      })
+      .catch(({ position, delay }) => {
+        reject({ position, delay });
+      });
 
-    let intervalID = setInterval(() => {
-      notify(position++, timerStartValue += Number(delay))
-      if (position === Number(amountInput.value))
-        window.clearInterval(intervalID)
-    })
-}
-
-function notify(position, delay) {
-  const shouldResolve = Math.random() > 0.3;
-  shouldResolve ? resolve (position,delay) : reject (position,delay)
+    intervalDelay += stepValue;
+  }
 }
 
 function resolve(timer) {
-  Notiflix.Notify.success(`✅ Fulfilled promise ${timer.position} in ${timer.delay}ms`);
+  Notiflix.Notify.success(
+    `✅ Fulfilled promise ${timer.position} in ${timer.delay}ms`
+  );
 }
 
 function reject(timer) {
-  Notiflix.Notify.failure(`❌ Rejected promise ${timer.position} in ${timer.delay}ms`);
+  Notiflix.Notify.failure(
+    `❌ Rejected promise ${timer.position} in ${timer.delay}ms`
+  );
 }
